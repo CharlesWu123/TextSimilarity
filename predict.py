@@ -16,6 +16,9 @@ import torch
 import pickle as pkl
 from transformers import BertForNextSentencePrediction, BertTokenizer, BertConfig
 from models import build_model
+import transformers
+
+transformers.logging.set_verbosity_error()
 
 
 class Predict:
@@ -25,12 +28,12 @@ class Predict:
         self.model = build_model(model_name, model_dir, best_name)
         self.model.to(self.device)
         self.model.eval()
-        self.max_length = 200
+        self.max_length = 100
 
     def __call__(self, texta, textb):
         encoding1 = self.tokenizer(texta, add_special_tokens=True, max_length=self.max_length, padding='max_length', truncation=True, return_tensors='pt')
         encoding2 = self.tokenizer(textb, add_special_tokens=True, max_length=self.max_length, padding='max_length', truncation=True, return_tensors='pt')
-        encoding = self.tokenizer(texta, textb, add_special_tokens=True, max_length=self.max_length, padding='max_length', truncation=True, return_tensors='pt')
+        encoding = self.tokenizer(texta, textb, add_special_tokens=True, max_length=self.max_length*2, padding='max_length', truncation=True, return_tensors='pt')
         encoding1 = {k: v.to(self.device) for k, v in encoding1.items()}
         encoding2 = {k: v.to(self.device) for k, v in encoding2.items()}
         encoding = {k: v.to(self.device) for k, v in encoding.items()}
@@ -54,9 +57,9 @@ def test(file_path, model, dataset, save_dir):
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    model_path = './output/20221103-2152/checkpoint'
-    model_name = 'Bert'
-    model = Predict(model_name, model_path, best_name='best_1.ckpt')
+    model_path = './output/SBert-20221105-1555/checkpoint'
+    model_name = 'SBert'
+    model = Predict(model_name, model_path, best_name='best.ckpt')
     test_file = [
         '/data/wuzhichao/homework/text_sim/data/bq_corpus/test.tsv',
         '/data/wuzhichao/homework/text_sim/data/lcqmc/test.tsv',
